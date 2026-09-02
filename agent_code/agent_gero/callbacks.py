@@ -39,20 +39,7 @@ def setup(self):
             self.model = pickle.load(file)
 
     self.logger.info("Setting up the agent gero.")
-    #self.model = defaultdict(lambda: np.zeros(len(ACTIONS)))
     self.epsilon = EPSILON
-    print("Number of Q-states:", len(self.model))
-
-    nonzero_states = 0
-    max_abs_q = 0.0
-
-    for state, q_values in self.model.items():
-        if np.any(q_values != 0):
-            nonzero_states += 1
-            max_abs_q = max(max_abs_q, np.max(np.abs(q_values)))
-
-    print("States with non-zero Q-values:", nonzero_states)
-    print("Maximum absolute Q-value:", max_abs_q)
 
 
 def act(self, game_state: dict) -> str:
@@ -70,13 +57,9 @@ def act(self, game_state: dict) -> str:
         return random.choice(ACTIONS)
 
     q_values = self.model[state]
-
     max_q = np.max(q_values)
-
     best_actions = np.flatnonzero(q_values == max_q)
-
     action_index = np.random.choice(best_actions)
-
     action = ACTIONS[action_index]
 
     return action
@@ -126,11 +109,6 @@ def state_to_features(game_state: dict) -> tuple:
     dx = cx - x
     dy = cy - y
 
-    # Direction
-    dx_direction = int(np.sign(dx))
-    dy_direction = int(np.sign(dy))
-
-
     # Distance bucket
     def bucket_distance(d):
         d = abs(d)
@@ -143,9 +121,6 @@ def state_to_features(game_state: dict) -> tuple:
             return 2
         else:
             return 3
-
-    dx_distance = bucket_distance(dx)
-    dy_distance = bucket_distance(dy)
 
     return (
         np.sign(dx),
