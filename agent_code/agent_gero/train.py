@@ -85,6 +85,23 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if e.COIN_COLLECTED in events:
         self.round_coins += 1
 
+    q_values = self.model[old_state]
+
+    self.logger.info(
+        f"STATE: {old_state}\n"
+        f"Q: {q_values}\n"
+        f"ACTIONS: {ACTIONS}"
+    )
+    self.logger.info(
+        f"UP={q_values[ACTIONS.index('UP')]:.3f}, "
+        f"DOWN={q_values[ACTIONS.index('DOWN')]:.3f}, "
+        f"LEFT={q_values[ACTIONS.index('LEFT')]:.3f}, "
+        f"RIGHT={q_values[ACTIONS.index('RIGHT')]:.3f}, "
+        f"BOMB={q_values[ACTIONS.index('BOMB')]:.3f}, "
+        f"WAIT={q_values[ACTIONS.index('WAIT')]:.3f}"
+    )
+
+
     # state_to_features is defined in callbacks.py
     self.transitions.append(transition)
     update_q_value(self, transition)
@@ -108,7 +125,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.transitions.append(transition)
     update_q_value(self, transition)
 
-    self.epsilon = max(self.epsilon * 0.995, MIN_EPSILON)
+    self.epsilon = max(self.epsilon * 0.998, MIN_EPSILON)
 
     reward = reward_from_events(self, events)
     self.round_reward += reward
@@ -121,6 +138,32 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         pickle.dump(dict(self.model), file)
 
 
+def crate_in_blast_range(field, x, y):
+    directions = [
+        (0, -1),
+        (1, 0),
+        (0, 1),
+        (-1, 0)
+    ]
+
+    for dx, dy in directions:
+        for distance in range(1, 4):
+            fx = x + dx * distance
+            fy = y + dy * distance
+
+            if fx < 0 or fx >= field.shape[0]:
+                break
+            if fy < 0 or fy >= field.shape[1]:
+                break
+
+            if field[fx, fy] == -1:
+                break
+
+            if field[fx, fy] == 1:
+                return True
+
+    return False
+
 def reward_from_events(self, events: List[str]) -> int:
     """
     *This is not a required function, but an idea to structure your code.*
@@ -129,19 +172,25 @@ def reward_from_events(self, events: List[str]) -> int:
     certain behavior.
     """
     game_rewards = {
-        e.COIN_COLLECTED: 2,
+        e.COIN_COLLECTED: 100,
         e.KILLED_OPPONENT: 5,
-        e.WAITED: -1,
-        e.INVALID_ACTION: -1,
-        e.MOVED_UP: -0.05,
-        e.MOVED_DOWN: -0.05,
-        e.MOVED_LEFT: -0.05,
-        e.MOVED_RIGHT: -0.05,
+        e.WAITED: -0.15,
+        e.INVALID_ACTION: -0.5,
+        e.BOMB_DROPPED: 0,
+        e.MOVED_UP: -1.15,
+        e.MOVED_DOWN: -1.15,
+        e.MOVED_LEFT: -1.15,
+        e.MOVED_RIGHT: -1.15,
+        e.KILLED_SELF: -40,
+        e.GOT_KILLED: 0,
+        e.COIN_FOUND: 30,
+        e.CRATE_DESTROYED: 5,
         PLACEHOLDER_EVENT: -.1  # idea: the custom event is bad
     }
     reward_sum = 0
     for event in events:
         if event in game_rewards:
             reward_sum += game_rewards[event]
+
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
     return reward_sum

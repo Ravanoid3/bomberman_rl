@@ -1,12 +1,12 @@
 import os
 import pickle
 import random
-from collections import defaultdict
+from collections import defaultdict, deque
 
 import numpy as np
 
 
-ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
+ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
 ALPHA = 0.1
 GAMMA = 0.9
@@ -31,7 +31,7 @@ def setup(self):
     if self.train or not os.path.isfile("my-saved-model.pt"):
         print("Setting up model from scratch.")
         weights = np.random.rand(len(ACTIONS))
-        #self.model = weights / weights.sum()
+        # self.model = defaultdict(lambda: weights / weights.sum())
         self.model = defaultdict(lambda: np.zeros(len(ACTIONS)))
     else:
         print("Loading model from saved state.")
@@ -56,7 +56,10 @@ def act(self, game_state: dict) -> str:
     if self.train and random.random() < self.epsilon:
         return random.choice(ACTIONS)
 
-    q_values = self.model[state]
+    q_values = self.model.get(state)
+    if q_values is None:
+        q_values = np.zeros(len(ACTIONS))
+
     max_q = np.max(q_values)
     best_actions = np.flatnonzero(q_values == max_q)
     action_index = np.random.choice(best_actions)
@@ -70,44 +73,10 @@ def state_to_features(game_state: dict) -> tuple:
         return None
 
     field = game_state["field"]
-    _, _, _, (x, y) = game_state["self"]
+    _, _, bomb_possible, (x, y) = game_state["self"]
 
     width, height = field.shape
-
-    def blocked(nx, ny):
-        if nx < 0 or nx >= width:
-            return 1
-        if ny < 0 or ny >= height:
-            return 1
-
-        return int(field[nx, ny] != 0)
-
-    blocked_up = blocked(x, y - 1)
-    blocked_right = blocked(x + 1, y)
-    blocked_down = blocked(x, y + 1)
-    blocked_left = blocked(x - 1, y)
-
     coins = game_state["coins"]
-
-    if not coins:
-        return (
-            0, 0, 0,
-            blocked_up,
-            blocked_right,
-            blocked_down,
-            blocked_left
-        )
-
-    # Closest coin using Manhattan distance
-    coin = min(
-        coins,
-        key=lambda c: abs(c[0] - x) + abs(c[1] - y)
-    )
-
-    cx, cy = coin
-
-    dx = cx - x
-    dy = cy - y
 
     # Distance bucket
     def bucket_distance(d):
@@ -122,14 +91,216 @@ def state_to_features(game_state: dict) -> tuple:
         else:
             return 3
 
-    return (
-        np.sign(dx),
-        np.sign(dy),
-        bucket_distance(abs(dx)),
-        bucket_distance(abs(dy)),
-        blocked_up,
-        blocked_right,
-        blocked_down,
-        blocked_left
-    )
+    if coins:
+        coin = min(coins, key=lambda c: abs(c[0] - x) + abs(c[1] - y))
+        cx, cy = coin
+        tx = cx - x
+        ty = cy - y
 
+        coin_visible = True
+        coin_dx = int(np.sign(tx))
+        coin_dy = int(np.sign(ty))
+        coin_distance_x = bucket_distance(tx)
+        coin_distance_y = bucket_distance(ty)
+
+    else:
+        coin_visible = False
+        coin_dx = 0
+        coin_dy = 0
+        coin_distance_x = 3
+        coin_distance_y = 3
+
+    # check if a field is dangerous i.e. in explosion distance to a detonating bomb
+    def is_dangerous(i, j):
+        explosions = game_state["explosion_map"]
+        if explosions[i, j] > 0:
+            return True
+
+        for (bx, by), countdown in game_state["bombs"]:
+            if (i, j) == (bx, by):
+                return True
+
+        return False
+
+    def get_tile_type(i, j):
+        if i < 0 or i >= width or j < 0 or j >= height:
+            return 2
+        if field[i, j] == -1:
+            return 2
+        if field[i, j] == 1:
+            return 1
+        return 0
+
+    def get_bomb_danger(i, j):
+        explosions = game_state["explosion_map"]
+
+        danger_here = 0
+        danger_up = 0
+        danger_right = 0
+        danger_down = 0
+        danger_left = 0
+
+        # Already exploding
+        if explosions[i, j] > 0:
+            danger_here = 1
+
+        if j - 1 >= 0 and explosions[i, j - 1] > 0:
+            danger_up = 1
+
+        if i + 1 < width and explosions[i + 1, j] > 0:
+            danger_right = 1
+
+        if j + 1 < height and explosions[i, j + 1] > 0:
+            danger_down = 1
+
+        if i - 1 >= 0 and explosions[i - 1, j] > 0:
+            danger_left = 1
+
+        # Future explosions
+        for (bx, by), countdown in game_state["bombs"]:
+
+            danger_value = min(countdown, 3)
+
+            if (bx, by) == (i, j):
+                danger_here = max(danger_here, danger_value)
+
+            directions = [
+                (0, -1),  # UP
+                (1, 0),  # RIGHT
+                (0, 1),  # DOWN
+                (-1, 0)  # LEFT
+            ]
+
+            for dx, dy in directions:
+
+                for distance in range(1, 4):
+
+                    fx = bx + dx * distance
+                    fy = by + dy * distance
+
+                    if fx < 0 or fx >= width or fy < 0 or fy >= height:
+                        break
+
+                    if field[fx, fy] == -1:
+                        break
+
+                    if (fx, fy) == (i, j):
+                        danger_here = max(danger_here, danger_value)
+
+                    elif (fx, fy) == (i, j - 1):
+                        danger_up = max(danger_up, danger_value)
+
+                    elif (fx, fy) == (i + 1, j):
+                        danger_right = max(danger_right, danger_value)
+
+                    elif (fx, fy) == (i, j + 1):
+                        danger_down = max(danger_down, danger_value)
+
+                    elif (fx, fy) == (i - 1, j):
+                        danger_left = max(danger_left, danger_value)
+
+                    if field[fx, fy] == 1:
+                        break
+
+        return (
+            danger_up,
+            danger_right,
+            danger_down,
+            danger_left,
+            danger_here
+        )
+
+
+    d_up, d_right, d_down, d_left, d_here = get_bomb_danger(x, y)
+    tile_up = get_tile_type(x, y - 1)
+    tile_right = get_tile_type(x + 1, y)
+    tile_down = get_tile_type(x, y + 1)
+    tile_left = get_tile_type(x - 1, y)
+
+    bomb_active = len(game_state["bombs"]) > 0
+
+    def can_escape_bomb(i, j):
+        countdown = 3
+
+        # Calculate the tiles affected by a bomb at (x, y)
+        blast = {(i, j)}
+
+        directions = [
+            (0, -1),
+            (1, 0),
+            (0, 1),
+            (-1, 0)
+        ]
+
+        for dx, dy in directions:
+            for distance in range(1, 4):
+                fx = i + dx * distance
+                fy = j + dy * distance
+
+                if fx < 0 or fx >= width or fy < 0 or fy >= height:
+                    break
+
+                if field[fx, fy] == -1:
+                    break
+
+                blast.add((fx, fy))
+
+                if field[fx, fy] == 1:
+                    break
+
+        # BFS
+        queue = deque()
+        queue.append(((i, j), 0))
+
+        visited = {(i, j)}
+
+        while queue:
+            (cx, cy), time = queue.popleft()
+            if (cx, cy) not in blast and time <= countdown:
+                return True
+
+            if time >= countdown:
+                continue
+
+            for dx, dy in directions:
+                nx = cx + dx
+                ny = cy + dy
+
+                if nx < 0 or nx >= width or ny < 0 or ny >= height:
+                    continue
+
+                if field[nx, ny] != 0:
+                    continue
+
+                if (nx, ny) in visited:
+                    continue
+
+                visited.add((nx, ny))
+                queue.append(((nx, ny), time + 1))
+
+        return False
+
+    bomb_trap = not can_escape_bomb(x, y)
+
+    return (
+        int(coin_visible),
+        coin_dx,
+        coin_dy,
+        coin_distance_x,
+        coin_distance_y,
+
+        tile_up,
+        tile_right,
+        tile_down,
+        tile_left,
+
+        d_here,
+        d_up,
+        d_right,
+        d_down,
+        d_left,
+
+        int(bomb_possible),
+        int(bomb_active),
+        int(bomb_trap)
+    )
