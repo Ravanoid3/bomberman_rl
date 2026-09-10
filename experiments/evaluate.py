@@ -32,10 +32,10 @@ from experiments import runner  # noqa: E402
 
 EVAL_DIR = REPO / 'results' / 'eval'
 
-#: Our learning agent lives in one folder; which variant it plays is chosen per
-#: match through the environment (see ``agent_code/q_agent/api.py``).
-#: ``q_sparring`` is the same code in a second folder, which is the only way to
-#: get two differently configured variants into a single match.
+# Our learning agent lives in one folder; which variant it plays is chosen per
+# match through the environment (see ``agent_code/q_agent/api.py``).
+# ``q_sparring`` is the same code in a second folder, which is the only way to
+# get two differently configured variants into a single match.
 AGENT = 'q_agent'
 SPARRING = 'q_sparring'
 

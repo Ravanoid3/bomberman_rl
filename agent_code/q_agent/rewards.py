@@ -95,7 +95,6 @@ def reward_from_events(cfg, events):
     table = cfg['rewards']
     return float(sum(table.get(ev, 0.0) for ev in events))
 
-
 def total_reward(cfg, events, old_info, new_info):
     """Event reward + step penalty + potential-based shaping."""
     reward = reward_from_events(cfg, events) + cfg['step_penalty']

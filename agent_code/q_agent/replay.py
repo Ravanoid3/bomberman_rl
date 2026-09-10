@@ -101,7 +101,6 @@ class _Pool:
             return np.empty(0, dtype=np.int64)
         return rng.integers(0, self.size, size=k)
 
-
 class ReplayMemory:
     """Main pool plus a smaller pool of rare, high-signal transitions."""
 

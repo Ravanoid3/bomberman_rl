@@ -99,26 +99,26 @@ BASE = dict(
 # present in official games, so every one of them is an ablation candidate.
 DEFAULT_REWARDS = {
     # genuine game events
-    'COIN_COLLECTED': 3.0,
+    'COIN_COLLECTED': 5.0,
     'KILLED_OPPONENT': 15.0,
-    'KILLED_SELF': -200.0,
-    'GOT_KILLED': -100.0,
-    'CRATE_DESTROYED': 0.3,
-    'COIN_FOUND': 0.2,
+    'KILLED_SELF': -50.0,
+    'GOT_KILLED': -40.0,
+    'CRATE_DESTROYED': 0.25,
+    'COIN_FOUND': 1,
     'SURVIVED_ROUND': 3.0,
     'OPPONENT_ELIMINATED': 0.5,
     'INVALID_ACTION': -1.0,
-    'WAITED': -0.2,
+    'WAITED': -0.5,
 
     # auxiliary events raised by rewards.py
-    'SUICIDAL_BOMB': -5.0,       # dropped a bomb with no escape route
-    'UNSAFE_MOVE': -1.5,         # stepped somewhere with no escape route
-    'USELESS_BOMB': -0.6,        # bomb that can hit neither crate nor opponent
-    'GOOD_BOMB': 0.5,            # bomb next to crates, escape available
-    'ATTACK_BOMB': 2.0,          # bomb that can catch an opponent
-    'ESCAPED_DANGER': 0.8,
-    'LINGERED_IN_DANGER': -0.5,
-    'ENTERED_DANGER': -0.4,
+    'SUICIDAL_BOMB': -15.0,      # dropped a bomb with no escape route
+    'UNSAFE_MOVE': -2.0,         # stepped somewhere with no escape route
+    'USELESS_BOMB': -0.45,       # bomb that can hit neither crate nor opponent
+    'GOOD_BOMB': 0.75,           # bomb next to crates, escape available
+    'ATTACK_BOMB': 2.5,          # bomb that can catch an opponent
+    'ESCAPED_DANGER': 1.0,
+    'LINGERED_IN_DANGER': -0.75,
+    'ENTERED_DANGER': -1.0,
 }
 
 def _cfg(**overrides):

@@ -244,6 +244,7 @@ def load_checkpoint(model, path, logger=None):
     try:
         with open(path, 'rb') as fh:
             sd = pickle.load(fh)
+            logger.info(f"Loaded checkpoint from {path}")
     except Exception as exc:  # pragma: no cover - corrupt file
         if logger:
             logger.warning(f'could not read {path}: {exc}')

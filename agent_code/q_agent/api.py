@@ -51,8 +51,10 @@ def resolve_config(env_var, default):
 # callbacks.py entry points
 # --------------------------------------------------------------------------
 def setup(self, config_name):
-    """Prepare an agent instance.  Called once per game process."""
+    """Prepare an agent instance. Called once per game process."""
     self.cfg = cfg_module.get(config_name)
+    self.logger.info(f"Using config: {self.cfg}")
+
     self.spec = feat.FeatureSpec(self.cfg['feature_blocks'])
     self.model = model_module.build(self.cfg, self.spec, gs.N_ACTIONS)
     self.rng = np.random.default_rng()
@@ -61,6 +63,7 @@ def setup(self, config_name):
     loaded = model_module.load_checkpoint(self.model, self.checkpoint_path,
                                           self.logger)
     if not loaded and self.cfg['init_from']:
+        self.logger.info(f"Checkpoint not found at {self.checkpoint_path}, trying curriculum warm start")
         # Curriculum warm start: pull over whatever the previous stage learned.
         # A list is tried in order, so a stage can fall back to an earlier
         # checkpoint when its immediate predecessor has not been trained yet.
