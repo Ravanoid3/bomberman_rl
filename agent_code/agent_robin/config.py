@@ -110,6 +110,7 @@ DEFAULT_REWARDS = {
     'INVALID_ACTION': -1.0,
     'WAITED': -0.2,
     'IN_LEAD': 20,
+    'IN_CORNER': -0.2,
 
     # auxiliary events raised by rewards.py
     'SUICIDAL_BOMB': -5.0,       # dropped a bomb with no escape route

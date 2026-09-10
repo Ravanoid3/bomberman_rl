@@ -354,7 +354,7 @@ def _learn_from_step(self, old_phi, old_info, action, new_phi, new_info, events,
                      terminal):
     events = list(events)
 
-    events += rewards_module.auxiliary_events(action, old_info, new_info, events, _is_in_lead(new_state))
+    events += rewards_module.auxiliary_events(action, old_info, new_info, events, _is_in_lead(new_state), new_state)
     reward = rewards_module.total_reward(self.cfg, events, old_info,
                                          new_info if not terminal else None)
 

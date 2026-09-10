@@ -24,7 +24,7 @@ from . import gamestate as gs
 # Custom events I added that I think are good to note. Note, that they do not exist in the framework and aren't emitted by it.
 AUX_EVENTS = (
     'SUICIDAL_BOMB', 'UNSAFE_MOVE', 'USELESS_BOMB', 'GOOD_BOMB',
-    'ATTACK_BOMB', 'ESCAPED_DANGER', 'LINGERED_IN_DANGER', 'ENTERED_DANGER', 'IN_LEAD'
+    'ATTACK_BOMB', 'ESCAPED_DANGER', 'LINGERED_IN_DANGER', 'ENTERED_DANGER', 'IN_LEAD', 'IN_CORNER'
 )
 
 # Transitions containing any of these are copied into the rare replay pool, see replay.py. The idea is that these events are rare and should be sampled more often.
@@ -34,8 +34,23 @@ IMPORTANT_EVENTS = frozenset({
     'SUICIDAL_BOMB', 'UNSAFE_MOVE', 'ATTACK_BOMB',
 })
 
+def is_in_corner(game_state):
+    field = game_state["field"]
+    _, _, _, (x, y) = game_state["self"]
+
+    width, height = field.shape
+
+    corners = {
+        (1, 1),
+        (width - 2, 1),
+        (1, height - 2),
+        (width - 2, height - 2),
+    }
+
+    return (x, y) in corners
+
 # Gather auxiliary events
-def auxiliary_events(action, old_info, new_info, events, in_lead):
+def auxiliary_events(action, old_info, new_info, events, in_lead, state):
     """Derive our own events from the before/after feature summaries."""
     out = []
     if old_info is None:
@@ -71,6 +86,8 @@ def auxiliary_events(action, old_info, new_info, events, in_lead):
     if in_lead:
         out.append('IN_LEAD')
 
+    if is_in_corner(state):
+        out.append('IN_CORNER')
 
     return out
 
