@@ -99,18 +99,18 @@ BASE = dict(
 # present in official games, so every one of them is an ablation candidate.
 DEFAULT_REWARDS = {
     # genuine game events
-    'COIN_COLLECTED': 7.0,
-    'KILLED_OPPONENT': 15.0,
-    'KILLED_SELF': -200.0,
-    'GOT_KILLED': -100.0,
+    'COIN_COLLECTED': 5.0,
+    'KILLED_OPPONENT': 25.0,
+    'KILLED_SELF': -2000.0,
+    'GOT_KILLED': -1000.0,
     'CRATE_DESTROYED': 1.3,
     'COIN_FOUND': 0.2,
     'SURVIVED_ROUND': 3.0,
     'OPPONENT_ELIMINATED': 0.5,
     'INVALID_ACTION': -1.0,
     'WAITED': -0.2,
-    'IN_LEAD': 20,
-    'IN_CORNER': -0.2,
+    'IN_LEAD': 5.0,
+    'IN_CORNER': -1.5,
 
     # auxiliary events raised by rewards.py
     'SUICIDAL_BOMB': -5.0,       # dropped a bomb with no escape route
