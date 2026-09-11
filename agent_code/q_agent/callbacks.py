@@ -4,7 +4,7 @@ mis-configured by a stray environment variable when playing in the tournament
 It always plays the ``tournament`` configuration (best checkpoint, safety veto on, no
 exploration).
 """
-from agent_code.agent_robin import api
+from agent_code.q_agent import api
 
 CONFIG = 'tournament'
 

@@ -16,13 +16,12 @@ It's not actually testing if the agent learns.
 6. n-step returns are the discounted sums they claim to be.
 """
 
-import subprocess
 import sys
 from pathlib import Path
 
 import numpy as np
 
-from agent_code.agent_robin.experiments import runner
+from experiments import runner
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
@@ -30,12 +29,12 @@ sys.path.insert(0, str(REPO))
 import events as game_events                          # noqa: E402
 import settings as s                                  # noqa: E402
 from items import Bomb                                # noqa: E402
-from agent_code.agent_robin import config as cfg_module   # noqa: E402
-from agent_code.agent_robin import features as feat       # noqa: E402
-from agent_code.agent_robin import gamestate as gs        # noqa: E402
-from agent_code.agent_robin import replay as replay_mod   # noqa: E402
-from agent_code.agent_robin import rewards as rewards_mod # noqa: E402
-from agent_code.agent_robin import symmetry               # noqa: E402
+from agent_code.q_agent import config as cfg_module   # noqa: E402
+from agent_code.q_agent import features as feat       # noqa: E402
+from agent_code.q_agent import gamestate as gs        # noqa: E402
+from agent_code.q_agent import replay as replay_mod   # noqa: E402
+from agent_code.q_agent import rewards as rewards_mod # noqa: E402
+from agent_code.q_agent import symmetry               # noqa: E402
 
 FAILURES = []
 

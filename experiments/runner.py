@@ -74,7 +74,7 @@ def run(match, timeout=None, verbose=False, retries=0, on_retry=None):
         if verbose:
             print('  $', ' '.join(cmd[1:]), flush=True)
         proc = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True,
-                              timeout=timeout, env=match.environment())
+                              timeout=timeout, env=match.environment(), encoding='utf-8')
         output = (proc.stderr or '') + (proc.stdout or '')
 
         if proc.returncode == 0 and stats.is_file():

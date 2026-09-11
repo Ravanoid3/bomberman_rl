@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from time import sleep, time
 from tqdm import tqdm
+import numpy as np
 
 import settings as s
 import pygame as pg

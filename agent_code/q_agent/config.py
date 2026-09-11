@@ -53,7 +53,7 @@ BASE = dict(
     # ---- exploration ----------------------------------------------------
     eps_start=1.0,
     eps_end=0.05,
-    eps_decay_rounds=1_500,      # time constant of the exponential decay
+    eps_decay_rounds=500,      # time constant of the exponential decay
     eps_greedy_bias=True,        # explore over legal actions only
     safe_explore=0.9,            # share of exploration restricted to safe actions
 
@@ -99,7 +99,7 @@ BASE = dict(
 # present in official games, so every one of them is an ablation candidate.
 DEFAULT_REWARDS = {
     # genuine game events
-    'COIN_COLLECTED': 10.0,
+    'COIN_COLLECTED': 17.0,
     'KILLED_OPPONENT': 25.0,
     'KILLED_SELF': -150.0,
     'GOT_KILLED': -100.0,
@@ -113,7 +113,7 @@ DEFAULT_REWARDS = {
     'IN_CORNER': -1,
 
     # auxiliary events raised by rewards.py
-    'SUICIDAL_BOMB': -10.0,       # dropped a bomb with no escape route
+    'SUICIDAL_BOMB': -30.0,       # dropped a bomb with no escape route
     'UNSAFE_MOVE': -1.5,         # stepped somewhere with no escape route
     'USELESS_BOMB': -0.6,        # bomb that can hit neither crate nor opponent
     'GOOD_BOMB': 1.5,            # bomb next to crates, escape available

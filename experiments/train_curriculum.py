@@ -19,10 +19,11 @@ import sys
 import time
 from pathlib import Path
 
+from experiments import runner
+
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from agent_code.agent_robin.experiments import runner
 
 MODEL_DIR = REPO / 'agent_code' / 'q_agent' / 'models'
 TRAIN_LOG_DIR = REPO / 'results' / 'train'
@@ -92,7 +93,7 @@ def _split_opponents(opponents):
 
 
 def stage_files(stage):
-    from agent_code.agent_robin import config as cfg_module
+    from agent_code.q_agent import config as cfg_module
     cfg = cfg_module.get(stage)
     return MODEL_DIR / cfg['checkpoint'], TRAIN_LOG_DIR / cfg['log_csv']
 
