@@ -99,24 +99,24 @@ BASE = dict(
 # present in official games, so every one of them is an ablation candidate.
 DEFAULT_REWARDS = {
     # genuine game events
-    'COIN_COLLECTED': 5.0,
+    'COIN_COLLECTED': 10.0,
     'KILLED_OPPONENT': 25.0,
-    'KILLED_SELF': -2000.0,
-    'GOT_KILLED': -1000.0,
+    'KILLED_SELF': -150.0,
+    'GOT_KILLED': -100.0,
     'CRATE_DESTROYED': 1.3,
-    'COIN_FOUND': 0.2,
+    'COIN_FOUND': 0.7,
     'SURVIVED_ROUND': 3.0,
     'OPPONENT_ELIMINATED': 0.5,
     'INVALID_ACTION': -1.0,
     'WAITED': -0.2,
-    'IN_LEAD': 5.0,
-    'IN_CORNER': -1.5,
+    'IN_LEAD': 0.1,
+    'IN_CORNER': -1,
 
     # auxiliary events raised by rewards.py
-    'SUICIDAL_BOMB': -5.0,       # dropped a bomb with no escape route
+    'SUICIDAL_BOMB': -10.0,       # dropped a bomb with no escape route
     'UNSAFE_MOVE': -1.5,         # stepped somewhere with no escape route
     'USELESS_BOMB': -0.6,        # bomb that can hit neither crate nor opponent
-    'GOOD_BOMB': 0.5,            # bomb next to crates, escape available
+    'GOOD_BOMB': 1.5,            # bomb next to crates, escape available
     'ATTACK_BOMB': 2.0,          # bomb that can catch an opponent
     'ESCAPED_DANGER': 0.8,
     'LINGERED_IN_DANGER': -0.5,
